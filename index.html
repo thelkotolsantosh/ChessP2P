@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2P Chess - Serverless Peer-to-Peer Multiplayer Chess</title>
+  <meta name="description" content="Play chess with your friends directly browser-to-browser via WebRTC, or challenge a high-performance AI engine. Zero logins, zero configurations, and 100% free.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- PeerJS WebRTC Library -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body class="dark-theme">
+
+  <!-- Background Animated Gradients -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="logo">
+      <i class="fa-solid fa-chess-knight logo-icon"></i>
+      <span>P2P<span class="logo-accent">CHESS</span></span>
+    </div>
+    <div class="header-actions">
+      <a href="https://github.com/thelkotolsantosh" target="_blank" rel="noopener noreferrer" class="icon-btn" aria-label="GitHub Profile" title="Thelkotol Santosh">
+        <i class="fa-brands fa-github" style="font-size: 20px;"></i>
+      </a>
+      <a href="https://app.netlify.com/teams/thelkotolsantosh/projects" target="_blank" rel="noopener noreferrer" class="icon-btn" aria-label="Netlify Profile" title="Thelkotol Santosh">
+        <i class="fa-solid fa-cloud" style="font-size: 18px; color: var(--accent-1);"></i>
+      </a>
+      <button id="theme-toggle" class="icon-btn" aria-label="Toggle Theme">
+        <i class="fa-solid fa-sun icon-sun"></i>
+        <i class="fa-solid fa-moon icon-moon"></i>
+      </button>
+      <button id="nav-support-btn" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-heart text-danger"></i> Support Dev
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- LANDING VIEW -->
+    <section id="landing-screen" class="view-active">
+      <div class="hero-section">
+        <h1 class="hero-title">Zero-Server Chess</h1>
+        <p class="hero-subtitle">Play multiplayer matches directly browser-to-browser using WebRTC, or challenge our advanced AI engine. No signups, no accounts, 100% free forever.</p>
+      </div>
+
+      <!-- Player Profile Setup Card -->
+      <div class="profile-setup-container glass-panel neomorphic-shadow">
+        <div class="profile-header">
+          <i class="fa-solid fa-user-gear profile-icon"></i>
+          <h3>Player Profile</h3>
+        </div>
+        <div class="profile-input-row">
+          <div class="input-wrapper">
+            <input type="text" id="username-input" placeholder="Enter Your Username..." maxlength="15" autocomplete="off" style="text-transform: lowercase;">
+            <span class="input-focus-border"></span>
+          </div>
+          <button id="save-username-btn" class="btn btn-primary">
+            <i class="fa-solid fa-circle-check"></i> Set Name
+          </button>
+        </div>
+        <p class="profile-subtext">This name will be displayed in your matches and shared with your P2P opponents.</p>
+      </div>
+
+      <div class="game-modes-grid">
+        <!-- AI Card -->
+        <div class="mode-card glass-panel neomorphic-shadow">
+          <div class="mode-icon-container bg-ai">
+            <i class="fa-solid fa-microchip"></i>
+          </div>
+          <h2>Play vs computer</h2>
+          <p>Challenge a tactical chess engine directly in your browser. Runs on a separate thread to keep your screen silky smooth.</p>
+          
+          <div class="difficulty-selector">
+            <label for="ai-difficulty">Difficulty Level</label>
+            <div class="difficulty-options">
+              <button class="diff-btn active" data-level="easy">Easy</button>
+              <button class="diff-btn" data-level="medium">Medium</button>
+              <button class="diff-btn" data-level="hard">Hard</button>
+              <button class="diff-btn" data-level="expert">Expert</button>
+            </div>
+          </div>
+
+          <button id="start-ai-btn" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-play"></i> Start Match
+          </button>
+        </div>
+
+        <!-- Multiplayer Card -->
+        <div class="mode-card glass-panel neomorphic-shadow">
+          <div class="mode-icon-container bg-p2p">
+            <i class="fa-solid fa-wifi"></i>
+          </div>
+          <h2>Challenge a Friend</h2>
+          <p>True peer-to-peer connection. Enter a friend's room code or host a new match to get a code instantly.</p>
+          
+          <div class="multiplayer-actions">
+            <!-- Host Action -->
+            <div class="host-section">
+              <button id="create-room-btn" class="btn btn-secondary btn-block">
+                <i class="fa-solid fa-plus"></i> Host New Room
+              </button>
+            </div>
+            
+            <div class="or-separator">
+              <span>OR</span>
+            </div>
+            
+            <!-- Join Action -->
+            <div class="join-section">
+              <div class="input-group">
+                <input type="text" id="room-code-input" placeholder="Enter Room Code (e.g. K9-R2-M6)" autocomplete="off" spellcheck="false">
+                <button id="join-room-btn" class="btn btn-primary">
+                  <i class="fa-solid fa-right-to-bracket"></i> Join
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Room Code Display (Initially Hidden) -->
+          <div id="room-info-display" class="room-info-panel hidden">
+            <p class="panel-label">Your Shareable Room Code</p>
+            <div class="room-code-display-box">
+              <span id="generated-room-code">Generating...</span>
+              <button id="copy-code-btn" class="icon-btn" aria-label="Copy Code">
+                <i class="fa-solid fa-copy"></i>
+              </button>
+            </div>
+            <div class="room-action-buttons">
+              <button id="share-link-btn" class="btn btn-sm btn-outline">
+                <i class="fa-solid fa-share-nodes"></i> Share Invite Link
+              </button>
+              <button id="qr-invite-btn" class="btn btn-sm btn-outline">
+                <i class="fa-solid fa-qrcode"></i> Show QR
+              </button>
+            </div>
+            <div class="waiting-indicator">
+              <div class="spinner-small"></div>
+              <span>Waiting for opponent to connect...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Free Analysis Card -->
+        <div class="mode-card glass-panel neomorphic-shadow">
+          <div class="mode-icon-container bg-analysis" style="background: linear-gradient(135deg, var(--accent-3) 0%, #00C853 100%); box-shadow: 0 4px 15px rgba(0, 255, 163, 0.4);">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <h2>Free Analysis Mode</h2>
+          <p>Explore board variants, play moves for both sides, and get real-time engine evaluation and suggested moves powered by Stockfish.js.</p>
+          
+          <button id="start-analysis-btn" class="btn btn-secondary btn-block" style="border-color: var(--accent-3); color: var(--accent-3); margin-top: auto;">
+            <i class="fa-solid fa-magnifying-glass-chart"></i> Start Analysis
+          </button>
+        </div>
+      </div>
+
+      <!-- Features Grid -->
+      <section class="features-section">
+        <h3 class="section-title">How It Works</h3>
+        <div class="features-grid">
+          <div class="feature-item glass-panel">
+            <i class="fa-solid fa-shield-halved feature-icon text-accent-1"></i>
+            <h4>100% Secure & Private</h4>
+            <p>Moves and chat logs pass directly between devices. No database, no chat servers, no data collection.</p>
+          </div>
+          <div class="feature-item glass-panel">
+            <i class="fa-solid fa-bolt feature-icon text-accent-2"></i>
+            <h4>Sub-100ms Latency</h4>
+            <p>Peer-to-peer WebRTC channels mean packet travel times are limited only by the speed of light between you and your opponent.</p>
+          </div>
+          <div class="feature-item glass-panel">
+            <i class="fa-solid fa-school feature-icon text-accent-3"></i>
+            <h4>School & Office Friendly</h4>
+            <p>Works directly across local networks (LAN) and bypasses strict ports using standard STUN traversal servers.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Educational / About Tech Section -->
+      <section class="about-tech-section glass-panel">
+        <h3>Architectural Deep-Dive</h3>
+        <p>This system utilizes <strong>WebRTC (Web Real-Time Communication)</strong> to establish direct, low-latency datachannels between players. Under ordinary circumstances, browser applications require a centralized server to relay state changes. P2P Chess replaces the server entirely once the match begins.</p>
+        
+        <div class="tech-flow-diagram">
+          <div class="flow-node">
+            <i class="fa-solid fa-desktop"></i>
+            <span>Player A (Host)</span>
+          </div>
+          <div class="flow-connector animate-pulse-right">
+            <span>WebRTC Connection (Direct)</span>
+          </div>
+          <div class="flow-node">
+            <i class="fa-solid fa-desktop"></i>
+            <span>Player B (Guest)</span>
+          </div>
+        </div>
+
+        <p class="tech-subtext"><strong>Signaling Phase:</strong> A temporary WebSocket broker (PeerJS Cloud) helps both clients exchange connection details (SDP session descriptions and ICE network candidates). Once the WebRTC handshake completes, the signaling broker is disconnected, and gameplay state travels directly browser-to-browser.</p>
+      </section>
+    </section>
+
+    <!-- GAME VIEW -->
+    <section id="game-screen" class="view-hidden">
+      <!-- Mobile Sub-Navigation Tabs -->
+      <div class="mobile-tabs">
+        <button class="mobile-tab-btn active" data-tab="board"><i class="fa-solid fa-chess-board"></i> Board</button>
+        <button class="mobile-tab-btn" data-tab="chat"><i class="fa-solid fa-comments"></i> Chat <span id="chat-badge" class="badge hidden">0</span></button>
+        <button class="mobile-tab-btn" data-tab="history"><i class="fa-solid fa-list-ol"></i> History</button>
+      </div>
+
+      <div class="game-layout">
+        <!-- CENTER AREA: Board, Players, and Promotion Overlay -->
+        <div class="game-center" id="panel-board">
+          <div class="chessboard-outer-frame neomorphic-shadow">
+            <!-- Evaluation Bar -->
+            <div id="evaluation-bar-container" class="eval-bar-container hidden">
+              <div id="evaluation-bar" class="eval-bar">
+                <div id="eval-bar-black" class="eval-bar-fill-black" style="height: 50%;"></div>
+                <div id="eval-score-text" class="eval-score-label">0.0</div>
+              </div>
+            </div>
+
+            <!-- Coordinates Indicators -->
+            <div class="board-y-coordinates">
+              <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+            
+            <div class="board-relative-wrapper">
+              <div id="chessboard" class="chessboard-grid">
+                <!-- Squares will be injected dynamically -->
+              </div>
+              
+              <!-- Pawn Promotion Selection Overlay -->
+              <div id="promotion-overlay" class="board-overlay hidden">
+                <div class="promotion-modal glass-panel">
+                  <h3>Promote Pawn To</h3>
+                  <div class="promotion-choices">
+                    <button class="promo-choice-btn" data-piece="q"><i class="fa-solid fa-chess-queen"></i></button>
+                    <button class="promo-choice-btn" data-piece="r"><i class="fa-solid fa-chess-rook"></i></button>
+                    <button class="promo-choice-btn" data-piece="b"><i class="fa-solid fa-chess-bishop"></i></button>
+                    <button class="promo-choice-btn" data-piece="n"><i class="fa-solid fa-chess-knight"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Endgame Overlay Screen -->
+              <div id="endgame-overlay" class="board-overlay hidden">
+                <div class="endgame-modal glass-panel">
+                  <div id="endgame-icon-container">
+                    <i class="fa-solid fa-trophy text-accent-2"></i>
+                  </div>
+                  <h2 id="endgame-title">Victory!</h2>
+                  <p id="endgame-message">Checkmate. White wins the match.</p>
+                  
+                  <div class="post-game-donation-prompt">
+                    <p>Enjoyed playing? Support the developer to keep this peer-to-peer platform active and free.</p>
+                    <button id="post-game-support-btn" class="btn btn-sm btn-primary">
+                      <i class="fa-solid fa-heart"></i> Support Developer
+                    </button>
+                  </div>
+                  
+                  <div class="endgame-actions">
+                    <button id="endgame-review-btn" class="btn btn-primary btn-block" style="background: linear-gradient(135deg, var(--accent-3) 0%, #00C853 100%); border-color: transparent;">
+                      <i class="fa-solid fa-magnifying-glass-chart"></i> Game Review
+                    </button>
+                    <button id="endgame-rematch-btn" class="btn btn-secondary btn-block">
+                      <i class="fa-solid fa-rotate-left"></i> Challenge Again
+                    </button>
+                    <button id="endgame-menu-btn" class="btn btn-outline btn-block">
+                      <i class="fa-solid fa-house"></i> Main Menu
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="board-x-coordinates">
+              <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+            </div>
+          </div>
+
+          <!-- Opponent Profile Box -->
+          <div class="player-panel glass-panel" id="opponent-panel">
+            <div class="player-avatar-row">
+              <div class="player-avatar bg-avatar-opp">
+                <i class="fa-solid fa-user-ninja"></i>
+              </div>
+              <div class="player-details">
+                <h4 id="opponent-name">Opponent</h4>
+                <div class="captured-pieces" id="opponent-captures"></div>
+              </div>
+            </div>
+            <div class="player-clock timer-inactive" id="opponent-clock">10:00</div>
+          </div>
+
+          <!-- Local Player Profile Box -->
+          <div class="player-panel glass-panel" id="local-player-panel">
+            <div class="player-avatar-row">
+              <div class="player-avatar bg-avatar-local">
+                <i class="fa-solid fa-chess-king"></i>
+              </div>
+              <div class="player-details">
+                <h4 id="local-player-name">You</h4>
+                <div class="captured-pieces" id="local-captures"></div>
+              </div>
+            </div>
+            <div class="player-clock timer-inactive" id="local-clock">10:00</div>
+          </div>
+
+          <!-- Compact controls row -->
+          <div class="board-controls-row glass-panel">
+            <div id="game-connection-status" class="status-indicator">
+              <span class="status-dot dot-yellow"></span>
+              <span class="status-text">Initialising game...</span>
+            </div>
+            <div class="board-controls-actions">
+              <button id="resign-btn" class="btn btn-danger btn-sm" disabled>
+                <i class="fa-solid fa-flag"></i> Resign
+              </button>
+              <button id="draw-btn" class="btn btn-secondary btn-sm" disabled>
+                <i class="fa-solid fa-handshake"></i> Offer Draw
+              </button>
+              <button id="flip-board-btn" class="btn btn-outline btn-sm">
+                <i class="fa-solid fa-arrows-rotate"></i> Flip
+              </button>
+              <button id="leave-game-btn" class="btn btn-outline-danger btn-sm">
+                <i class="fa-solid fa-house"></i> Leave
+              </button>
+            </div>
+          </div>
+
+          <!-- Review Navigation Controls (Initially Hidden) -->
+          <div id="review-navigation" class="board-navigation-row glass-panel hidden">
+            <button id="review-first-btn" class="btn btn-outline btn-sm"><i class="fa-solid fa-angles-left"></i></button>
+            <button id="review-prev-btn" class="btn btn-outline btn-sm"><i class="fa-solid fa-angle-left"></i></button>
+            <span id="review-move-indicator">Move 0 / 0</span>
+            <button id="review-next-btn" class="btn btn-outline btn-sm"><i class="fa-solid fa-angle-right"></i></button>
+            <button id="review-last-btn" class="btn btn-outline btn-sm"><i class="fa-solid fa-angles-right"></i></button>
+          </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR: Moves List, Chat, and Analysis -->
+        <aside class="game-sidebar-right">
+          <!-- Move History (preserves id for mobile history tab) -->
+          <div id="panel-history" class="move-history-panel glass-panel">
+            <h3>Moves History</h3>
+            <div class="history-scrollable-container">
+              <table id="moves-history-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>White</th>
+                    <th>Black</th>
+                  </tr>
+                </thead>
+                <tbody id="moves-history-body">
+                  <!-- Moves injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Chat & Analysis container (preserves id for mobile chat tab) -->
+          <div id="panel-chat" class="chat-and-analysis-container">
+            <!-- Chat panel -->
+            <div class="chat-panel glass-panel">
+              <h3>P2P Room Chat</h3>
+              <div class="chat-messages-container" id="chat-messages-box">
+                <div class="chat-notice">
+                  <i class="fa-solid fa-lock"></i> All messages travel directly between devices using WebRTC. No data is stored.
+                </div>
+              </div>
+              <form id="chat-form" class="chat-input-row">
+                <input type="text" id="chat-input-field" placeholder="Send a message..." autocomplete="off" spellcheck="false" disabled>
+                <button type="submit" id="chat-send-btn" class="icon-btn" disabled aria-label="Send Message">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+              </form>
+            </div>
+
+            <!-- Analysis Panel (Visible only in Free Analysis Mode) -->
+            <div id="analysis-panel" class="analysis-panel glass-panel hidden">
+              <h3>Stockfish Analysis</h3>
+              <div class="analysis-card-body">
+                <div class="analysis-engine-status">
+                  <i class="fa-solid fa-brain text-accent-1 animate-pulse-scale"></i>
+                  <span id="analysis-status-text">Engine loading...</span>
+                </div>
+                
+                <div class="analysis-metric-row">
+                  <span class="metric-label">Evaluation:</span>
+                  <span id="analysis-eval-score" class="metric-value font-mono">+0.00</span>
+                </div>
+
+                <div class="analysis-best-line-box">
+                  <h4 class="panel-label">Suggested Line</h4>
+                  <div id="analysis-best-line" class="best-line-text font-mono">No analysis yet. Move a piece to begin.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Game Review Panel (Initially Hidden) -->
+          <div id="panel-review" class="game-review-panel glass-panel hidden">
+            <div class="review-header">
+              <i class="fa-solid fa-circle-check text-success"></i>
+              <h3>Game Review</h3>
+            </div>
+
+            <!-- Coach Section -->
+            <div class="coach-container glass-panel">
+              <div class="coach-avatar-wrapper">
+                <svg class="coach-avatar-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="50" cy="50" r="45" fill="#1e293b" stroke="var(--accent-3)" stroke-width="2"/>
+                  <path d="M50 25c-12 0-15 8-15 15 0 12 7 18 15 18s15-6 15-18c0-7-3-15-15-15z" fill="#fcd0a1"/>
+                  <path d="M35 40c0 15 6 22 15 22s15-7 15-22c0-2-30-2-30 0z" fill="#5c4033"/>
+                  <path d="M45 53h10" stroke="#fff" stroke-width="2"/>
+                  <rect x="38" y="34" width="10" height="7" rx="2" fill="none" stroke="#000" stroke-width="2"/>
+                  <rect x="52" y="34" width="10" height="7" rx="2" fill="none" stroke="#000" stroke-width="2"/>
+                  <line x1="48" y1="37" x2="52" y2="37" stroke="#000" stroke-width="2"/>
+                  <path d="M33 35c0-10 7-15 17-15s17 5 17 15" fill="none" stroke="#5c4033" stroke-width="6" stroke-linecap="round"/>
+                  <path d="M20 85c0-12 10-18 30-18s30 6 30 18v5H20v-5z" fill="#334155"/>
+                </svg>
+              </div>
+              <div class="coach-bubble-wrapper">
+                <div class="coach-speech-bubble">
+                  <p id="coach-message">Nice win! Let's review it together.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Accuracy Bars -->
+            <div class="accuracy-comparison-box">
+              <div class="accuracy-player">
+                <span class="player-name-label" id="review-white-name">White</span>
+                <div class="accuracy-score-badge accuracy-white" id="review-white-accuracy">0.0</div>
+              </div>
+              <div class="accuracy-vs">vs</div>
+              <div class="accuracy-player">
+                <span class="player-name-label" id="review-black-name">Black</span>
+                <div class="accuracy-score-badge accuracy-black" id="review-black-accuracy">0.0</div>
+              </div>
+            </div>
+
+            <!-- Evaluation Graph -->
+            <div class="review-graph-box">
+              <h4 class="panel-label">Evaluation History</h4>
+              <canvas id="eval-history-canvas" width="310" height="85" style="border-radius: 8px; background: rgba(0,0,0,0.2); width: 100%; display: block;"></canvas>
+            </div>
+
+            <!-- Move Quality Counts Grid -->
+            <div class="review-stats-scroll">
+              <table class="move-quality-table">
+                <tbody id="move-quality-table-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Active Move Detail card -->
+            <div id="active-move-review-card" class="active-move-card glass-panel hidden">
+              <div class="active-move-header">
+                <span id="active-move-classification" class="move-badge">Best Move</span>
+                <span id="active-move-notation">e4</span>
+              </div>
+              <p id="active-move-explanation">This was the best move on the board.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footers -->
+  <footer class="app-footer">
+    <div class="footer-links">
+      <button id="footer-about-btn" class="footer-link-btn">Architecture Details</button>
+      <span class="footer-separator">•</span>
+      <button id="footer-support-btn" class="footer-link-btn text-heart"><i class="fa-solid fa-heart"></i> Support Future Development</button>
+    </div>
+    <p class="copyright">&copy; 2026 P2P Chess. Built for high performance, low-latency browser gameplay.</p>
+  </footer>
+
+  <!-- DONATION MODAL -->
+  <div id="donation-modal" class="modal-overlay hidden">
+    <div class="modal-card glass-panel neomorphic-shadow">
+      <button id="close-donation-btn" class="modal-close-btn" aria-label="Close Modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      
+      <div class="modal-header">
+        <i class="fa-solid fa-heart donation-heart-icon animate-pulse-scale"></i>
+        <h2>Support Development</h2>
+      </div>
+      
+      <div class="modal-body">
+        <p class="donation-message">
+          Thank you for supporting this project! Your voluntary contributions help improve real-time features, implement deeper engines, and keep the platform completely free, without ad integrations or forced accounts.
+        </p>
+
+        <div class="qr-container-box">
+          <!-- Canvas for dynamic QR generation (invite links) -->
+          <canvas id="upi-qr-canvas" width="220" height="220" class="hidden"></canvas>
+          <!-- Image for custom static UPI QR code -->
+          <img id="upi-qr-image" src="upi_qr.png" alt="PhonePe UPI QR Code" width="220" height="220" style="border-radius: 8px; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+          <div class="qr-subtext">Scan with PhonePe, GPay, Paytm, or any UPI App</div>
+        </div>
+
+        <div class="upi-id-box">
+          <span class="upi-label">UPI Address:</span>
+          <span id="upi-address-text" class="upi-value">8019542500@upi</span>
+          <button id="copy-upi-btn" class="btn btn-sm btn-outline icon-btn-text" aria-label="Copy UPI ID">
+            <i class="fa-solid fa-copy"></i> Copy ID
+          </button>
+        </div>
+
+        <div class="donation-actions">
+          <a id="open-upi-app-btn" href="upi://pay?pa=8019542500@upi&pn=THELKOTLOL%20SANTOSH&cu=INR" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-mobile-screen-button"></i> Open in UPI App
+          </a>
+          <button id="download-qr-btn" class="btn btn-secondary btn-block">
+            <i class="fa-solid fa-download"></i> Save QR Code Image
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT / TECH MODAL -->
+  <div id="about-modal" class="modal-overlay hidden">
+    <div class="modal-card glass-panel neomorphic-shadow modal-large">
+      <button id="close-about-btn" class="modal-close-btn" aria-label="Close Modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      
+      <div class="modal-header">
+        <i class="fa-solid fa-circle-info about-tech-icon"></i>
+        <h2>P2P Platform Architecture</h2>
+      </div>
+      
+      <div class="modal-body about-scrollable-body">
+        <h3>1. WebRTC Protocol Setup</h3>
+        <p>WebRTC (Web Real-Time Communication) provides web browsers with direct Application Programming Interfaces (APIs) for Peer-to-Peer data exchange. To connect, players need to trade network configurations via <strong>Signaling</strong>.</p>
+        
+        <h3>2. What are STUN, TURN, and ICE?</h3>
+        <ul>
+          <li><strong>ICE (Interactive Connectivity Establishment):</strong> A framework used to discover the best network paths between peers.</li>
+          <li><strong>STUN (Session Traversal Utilities for NAT):</strong> Allows local clients to discover their public-facing IP and port. Most connections succeed using STUN. We use Google's public STUN servers for this discovery.</li>
+          <li><strong>TURN (Traversal Using Relays around NAT):</strong> If both clients are behind restrictive firewalls (such as symmetric enterprise NATs), they cannot connect directly. In a commercial environment, TURN servers act as data relays. Because TURN servers require high bandwidth hosting, they are omitted in this free platform, meaning connections might fail on extremely strict enterprise networks.</li>
+        </ul>
+
+        <h3>3. Dynamic Room-Code Matchmaking</h3>
+        <p>To avoid requiring complex databases, the system converts letters and numbers into a 6-character room code (e.g. <code>A1-N2-B2</code>). The Host spawns a PeerJS connection registering this ID. The Guest queries this exact Peer ID. Once the SDP handshake establishes the direct WebRTC channel, signaling is closed.</p>
+        
+        <h3>4. Dual-State Move Validation</h3>
+        <p>To ensure game security, move validation runs on <strong>both</strong> browsers. When you execute a move, it is checked locally, sent over the WebRTC datachannel, and then re-validated by your opponent's engine before updating their screen. If a desync occurs, the engine re-synchronizes the board using standard FEN hashes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME REVIEW LOADING OVERLAY -->
+  <div id="review-loading-overlay" class="modal-overlay hidden" style="z-index: 10000;">
+    <div class="modal-card glass-panel neomorphic-shadow" style="text-align: center; max-width: 400px; padding: 30px;">
+      <div class="spinner-large" style="margin: 0 auto 20px auto; border-top-color: var(--accent-3);"></div>
+      <h2 style="font-family: var(--font-header); margin-bottom: 10px;">Evaluating Match...</h2>
+      <div class="progress-bar-container" style="background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; overflow: hidden; margin: 20px 0;">
+        <div id="review-progress-bar" style="background: linear-gradient(90deg, var(--accent-3) 0%, #00c853 100%); height: 100%; width: 0%; transition: width 0.1s linear;"></div>
+      </div>
+      <p id="review-loading-status" class="loading-subtext" style="color: var(--text-secondary); font-size: 14px;">Analyzing move qualities with engine...</p>
+    </div>
+  </div>
+
+  <!-- Game Modules and Orchestration Scripts -->
+  <script src="chess/engine.js"></script>
+  <script src="chess/state.js"></script>
+  <script src="chess/board.js"></script>
+  <script src="ai/evaluation.js"></script>
+  <script src="ai/minimax.js"></script>
+  <script src="ai/review.js"></script>
+  <script src="networking/peer.js"></script>
+  <script src="networking/sync.js"></script>
+  <script src="ui/theme.js"></script>
+  <script src="ui/chat.js"></script>
+  <script src="ui/donation.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
