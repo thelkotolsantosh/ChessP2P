@@ -29,8 +29,11 @@
   <!-- Header / Navigation -->
   <header class="app-header">
     <div class="logo">
-      <i class="fa-solid fa-chess-knight logo-icon"></i>
-      <span>P2P<span class="logo-accent">CHESS</span></span>
+      <div class="logo-title">
+        <i class="fa-solid fa-chess-knight logo-icon"></i>
+        <span>P2P<span class="logo-accent">CHESS</span></span>
+      </div>
+      <span class="logo-subtitle">Powered by Halopay Labs</span>
     </div>
     <div class="header-actions">
       <a href="https://github.com/thelkotolsantosh" target="_blank" rel="noopener noreferrer" class="icon-btn" aria-label="GitHub Profile" title="Thelkotol Santosh">
@@ -169,6 +172,37 @@
           </button>
         </div>
       </div>
+
+      <!-- Instructions Section -->
+      <section class="instructions-section">
+        <h3 class="section-title">How to Play</h3>
+        <div class="instructions-grid">
+          <div class="instruction-card glass-panel">
+            <div class="instruction-header">
+              <i class="fa-solid fa-robot instruction-icon text-accent-3"></i>
+              <h4>Play vs Computer (AI)</h4>
+            </div>
+            <ol class="instruction-list">
+              <li>Set your username in the <strong>Player Profile</strong> setup card at the top.</li>
+              <li>Select your desired difficulty level under <strong>Difficulty Level</strong> (Easy, Medium, Hard, or Expert).</li>
+              <li>Click <strong>Start Match</strong> to launch the game directly against the local engine.</li>
+            </ol>
+          </div>
+          
+          <div class="instruction-card glass-panel">
+            <div class="instruction-header">
+              <i class="fa-solid fa-users instruction-icon text-accent-1"></i>
+              <h4>Play vs Friend (Peer-to-Peer)</h4>
+            </div>
+            <ol class="instruction-list">
+              <li>Enter your username in the <strong>Player Profile</strong> setup card.</li>
+              <li><strong>To Host:</strong> Click <strong>Host New Room</strong> to generate a 6-character room code. Share this code, the QR invite, or the direct link with your friend.</li>
+              <li><strong>To Join:</strong> Paste your friend's room code in the input box and click <strong>Join</strong>.</li>
+              <li>WebRTC establishes a direct, secure connection between both browsers instantly.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
 
       <!-- Features Grid -->
       <section class="features-section">

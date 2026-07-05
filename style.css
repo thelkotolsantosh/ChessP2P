@@ -144,12 +144,30 @@ html, body {
 
 .logo {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.logo-title {
+  display: flex;
   align-items: center;
   gap: 10px;
   font-family: var(--font-header);
   font-weight: 800;
   font-size: 24px;
   letter-spacing: 1px;
+}
+
+.logo-subtitle {
+  font-size: 9px;
+  opacity: 0.6;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  margin-left: 38px;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  line-height: 1;
 }
 
 .logo-icon {
@@ -529,6 +547,56 @@ body.light-theme .icon-sun { display: block; }
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* Instructions section */
+.instructions-section {
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.instructions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.instruction-card {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 24px;
+}
+
+.instruction-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.instruction-header h4 {
+  font-family: var(--font-header);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.instruction-icon {
+  font-size: 24px;
+}
+
+.instruction-list {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.instruction-list li strong {
+  color: var(--text-primary);
 }
 
 /* Features section */
